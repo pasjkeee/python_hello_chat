@@ -9,6 +9,7 @@ down_revision = '1'
 branch_labels = None
 depends_on = None
 
+
 def upgrade():
     op.add_column(
         'user',
@@ -30,6 +31,7 @@ def upgrade():
         'user',
         sa.Column('description', sa.String(length=500), nullable=False)
     )
+
 
 def downgrade():
     op.drop_column('user', 'age')

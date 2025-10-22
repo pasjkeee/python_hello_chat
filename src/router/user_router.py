@@ -9,17 +9,20 @@ user_router = APIRouter(
     tags=["user"]
 )
 
-@user_router.post("/create", response_model = CreateUserRs)
+
+@user_router.post("/create", response_model=CreateUserRs)
 async def create_user(rq: CreateUserRq) -> CreateUserRs:
     log.info(f"Поступил запрос на создание пользователя с rqId {rq.rqId}")
     return await UserService.create_user(rq.login)
 
-@user_router.get("/all", response_model = List[UserRs])
+
+@user_router.get("/all", response_model=List[UserRs])
 async def get_users() -> List[UserRs]:
     log.info("Поступил запрос на получение всех пользователей")
     return await UserService.get_users()
 
-@user_router.get("/{user_id}", response_model = UserRs)
+
+@user_router.get("/{user_id}", response_model=UserRs)
 async def get_user(user_id: str) -> UserRs:
     log.info(f"Поступил запрос на получение пользователя с id {user_id}")
     log.debug(f"Поступил запрос на получение пользователя {user_id}")

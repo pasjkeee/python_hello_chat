@@ -6,6 +6,7 @@ from src.model.entity.user import User
 from sqlalchemy import select, exists
 from src.persistence import AsyncSessionLocal
 
+
 class UserRepository:
 
     @staticmethod

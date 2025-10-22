@@ -9,6 +9,7 @@ down_revision = None
 branch_labels = None
 depends_on = None
 
+
 def upgrade():
     op.create_table(
         'user',
@@ -16,8 +17,9 @@ def upgrade():
         sa.Column('login', sa.String(length=255), nullable=False),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('login'),
-        schema = 'public'
+        schema='public'
     )
+
 
 def downgrade():
     op.drop_table('user')

@@ -5,6 +5,7 @@ from sqlalchemy import Column, String, Integer
 class Base(DeclarativeBase):
     pass
 
+
 class User(Base):
     __tablename__ = "user"
     id = Column(String(36), primary_key=True, comment='Уникальный идентификатор записи')

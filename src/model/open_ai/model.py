@@ -4,6 +4,8 @@ from pydantic import BaseModel
 """
     Пол
 """
+
+
 class Gender(Enum):
     MALE = 1
     FEMALE = 2
@@ -13,6 +15,8 @@ class Gender(Enum):
 """
     Запрос в ai на создание личности клиента
 """
+
+
 class CreateClientInfoRs(BaseModel):
     age: int
     gender: Gender
