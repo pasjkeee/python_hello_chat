@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 
@@ -18,3 +20,4 @@ class UserRs(BaseModel):
     name: str
     surname: str
     description: str
+    created_at: datetime

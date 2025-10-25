@@ -1,6 +1,10 @@
+from datetime import datetime
+
 from fastapi import APIRouter, HTTPException
+from fastapi.params import Query
+
 from main.model.api.user_model import CreateUserRs, CreateUserRq, UserRs
-from typing import List
+from typing import List, Optional
 
 import logging as log
 from main.service.user_service import UserService
@@ -15,9 +19,11 @@ async def create_user(rq: CreateUserRq) -> CreateUserRs:
 
 
 @user_router.get("/all", response_model=List[UserRs])
-async def get_users() -> List[UserRs]:
+async def get_users(
+        since: Optional[datetime] = Query(None, description="Начиная с времени регистрации пользователя")
+) -> List[UserRs]:
     log.info("Поступил запрос на получение всех пользователей")
-    return await UserService.get_users()
+    return await UserService.get_users(since)
 
 
 @user_router.get("/{user_id}", response_model=UserRs)

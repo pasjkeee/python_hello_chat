@@ -1,5 +1,5 @@
 from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy import Column, String, Integer
+from sqlalchemy import Column, String, Integer, DateTime
 
 
 class Base(DeclarativeBase):
@@ -15,3 +15,4 @@ class User(Base):
     name = Column(String(50), nullable=False)
     surname = Column(String(50), nullable=False)
     description = Column(String(500), nullable=False)
+    created_at = Column(DateTime(timezone=True), nullable=False)

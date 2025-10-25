@@ -14,9 +14,11 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 # access to the values within the .ini file in use.
 config = context.config
 
+
 def get_url() -> str:
     url = config.get_main_option("sqlalchemy.url")
     return url.strip() if url and url.strip() else os.getenv("ALEMBIC_DATABASE_URL")
+
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

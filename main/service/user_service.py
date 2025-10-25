@@ -1,4 +1,5 @@
-from typing import List
+from datetime import datetime
+from typing import List, Optional
 from uuid import uuid4
 
 from main.client.ai.open_ai import create_client_info
@@ -11,7 +12,7 @@ import logging as log
 
 def map_user_entity_to_user_rs(user: User) -> UserRs:
     return UserRs(id=user.id, login=user.login, age=user.age, gender=user.gender, name=user.name, surname=user.surname,
-                  description=user.description)
+                  description=user.description, created_at=user.created_at)
 
 
 class UserService:
@@ -27,7 +28,8 @@ class UserService:
             gender=str(additional_client_info.gender.name),
             name=additional_client_info.name,
             surname=additional_client_info.surname,
-            description=additional_client_info.description
+            description=additional_client_info.description,
+            created_at=datetime.now()
         )
 
         user = await UserRepository.save(user=user)
@@ -41,6 +43,6 @@ class UserService:
         return map_user_entity_to_user_rs(user)
 
     @staticmethod
-    async def get_users() -> List[UserRs]:
-        users = await UserRepository.find_all()
+    async def get_users(since: Optional[datetime]) -> List[UserRs]:
+        users = await UserRepository.find_all(since)
         return [map_user_entity_to_user_rs(user) for user in users]

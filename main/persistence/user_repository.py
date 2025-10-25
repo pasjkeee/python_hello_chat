@@ -1,4 +1,5 @@
-from typing import List
+from datetime import datetime
+from typing import List, Optional
 
 from pydantic.v1.typing import is_none_type
 
@@ -33,9 +34,12 @@ class UserRepository:
             return user
 
     @staticmethod
-    async def find_all() -> List[User]:
+    async def find_all(since: Optional[datetime]) -> List[User]:
         async with AsyncSessionLocal() as session:
-            stmt = select(User)
+            if since is None:
+                stmt = select(User).order_by(User.created_at.asc())
+            else:
+                stmt = select(User).where(User.created_at >= since).order_by(User.created_at.asc())
             users = (await session.execute(stmt)).scalars().all()
             await session.commit()
             return users
