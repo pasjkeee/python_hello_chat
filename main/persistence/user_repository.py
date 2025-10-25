@@ -34,12 +34,12 @@ class UserRepository:
             return user
 
     @staticmethod
-    async def find_all(since: Optional[datetime]) -> List[User]:
+    async def find_all(registered_after: Optional[datetime]) -> List[User]:
         async with AsyncSessionLocal() as session:
-            if since is None:
+            if registered_after is None:
                 stmt = select(User).order_by(User.created_at.asc())
             else:
-                stmt = select(User).where(User.created_at >= since).order_by(User.created_at.asc())
+                stmt = select(User).where(User.created_at >= registered_after).order_by(User.created_at.asc())
             users = (await session.execute(stmt)).scalars().all()
             await session.commit()
             return users

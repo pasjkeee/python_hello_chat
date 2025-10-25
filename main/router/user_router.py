@@ -20,10 +20,11 @@ async def create_user(rq: CreateUserRq) -> CreateUserRs:
 
 @user_router.get("/all", response_model=List[UserRs])
 async def get_users(
-        since: Optional[datetime] = Query(None, description="Начиная с времени регистрации пользователя")
+        registered_after: Optional[datetime] = Query(None, description="Начиная с времени регистрации пользователя",
+                                                     alias='registeredAfter')
 ) -> List[UserRs]:
     log.info("Поступил запрос на получение всех пользователей")
-    return await UserService.get_users(since)
+    return await UserService.get_users(registered_after)
 
 
 @user_router.get("/{user_id}", response_model=UserRs)

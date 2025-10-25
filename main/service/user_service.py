@@ -43,6 +43,6 @@ class UserService:
         return map_user_entity_to_user_rs(user)
 
     @staticmethod
-    async def get_users(since: Optional[datetime]) -> List[UserRs]:
-        users = await UserRepository.find_all(since)
+    async def get_users(registered_after: Optional[datetime]) -> List[UserRs]:
+        users = await UserRepository.find_all(registered_after)
         return [map_user_entity_to_user_rs(user) for user in users]
