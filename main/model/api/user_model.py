@@ -1,5 +1,7 @@
 from datetime import datetime
+from typing import Optional
 
+from fastapi.params import Query
 from pydantic import BaseModel
 
 
@@ -21,3 +23,10 @@ class UserRs(BaseModel):
     surname: str
     description: str
     created_at: datetime
+
+
+class GetAllUsersParams:
+    def __init__(self, registered_after: Optional[datetime] = Query(None,
+                                                                    description="Начиная с времени регистрации пользователя",
+                                                                    alias='registeredAfter')):
+        self.registered_after = registered_after
