@@ -1,13 +1,22 @@
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
+import os
+import asyncio
 from sqlalchemy import pool
-
 from alembic import context
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
+def get_url() -> str:
+    url = config.get_main_option("sqlalchemy.url")
+    return url.strip() if url and url.strip() else os.getenv("ALEMBIC_DATABASE_URL")
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -39,9 +48,8 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
     context.configure(
-        url=url,
+        url=get_url(),
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -51,29 +59,30 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
-def run_migrations_online() -> None:
-    """Run migrations in 'online' mode.
+def _do_run_migrations(connection) -> None:
+    """Синхронное тело миграций, вызываем его через run_sync."""
+    context.configure(connection=connection, target_metadata=target_metadata)
 
-    In this scenario we need to create an Engine
-    and associate a connection with the context.
+    with context.begin_transaction():
+        context.run_migrations()
 
-    """
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
+
+async def run_migrations_online() -> None:
+    """Online: асинхронный движок на asyncpg."""
+    connectable: AsyncEngine = create_async_engine(
+        get_url(),
         poolclass=pool.NullPool,
+        # echo=True,  # включить при отладке
     )
 
-    with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+    async with connectable.connect() as connection:
+        # Важно: оборачиваем синхронные вызовы Alembic через run_sync
+        await connection.run_sync(_do_run_migrations)
 
-        with context.begin_transaction():
-            context.run_migrations()
+    await connectable.dispose()
 
 
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    run_migrations_online()
+    asyncio.run(run_migrations_online())
