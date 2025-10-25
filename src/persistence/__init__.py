@@ -3,18 +3,18 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from src.config.settings import settings
 
 db_url = URL.create(
-    drivername=settings.driver,
-    username=settings.username,
-    password=settings.password,
-    host=settings.host,
-    port=settings.port,
-    database=settings.database
+    drivername=settings.db.driver,
+    username=settings.db.username,
+    password=settings.db.password.get_secret_value(),
+    host=settings.db.host,
+    port=settings.db.port,
+    database=settings.db.database
 )
 
 engine = create_async_engine(
     db_url,
-    echo=True,
-    connect_args={"server_settings": {"search_path": settings.db_schema}}
+    echo=settings.db.debug,
+    connect_args={"server_settings": {"search_path": settings.db.db_schema}}
 )
 
 AsyncSessionLocal = async_sessionmaker(

@@ -1,22 +1,19 @@
-from pydantic_settings import BaseSettings
-from dotenv import load_dotenv
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field
 
-load_dotenv()
-
+from .db import DatabaseSettings
+from .openai import OpenAiSettings
 
 class Settings(BaseSettings):
-    driver: str
-    username: str
-    password: str
-    host: str
-    port: str
-    database: str
-    db_schema: str
-    openai_api_key: str
+    db: DatabaseSettings = Field(default_factory=DatabaseSettings)
+    openai: OpenAiSettings = Field(default_factory=OpenAiSettings)
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-
+    model_config = SettingsConfigDict(
+        env_file=".env", # только локально
+        env_file_encoding="utf-8", # только локально
+        extra='ignore',
+        case_sensitive=False,
+        env_nested_delimiter="__"
+    )
 
 settings = Settings()

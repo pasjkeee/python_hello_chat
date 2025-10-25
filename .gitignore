@@ -9,7 +9,7 @@ __pycache__/
 *.iml
 
 # Environments
-.env-*
+.env
 .venv
 env/
 venv/
