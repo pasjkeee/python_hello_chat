@@ -3,10 +3,9 @@ from typing import List, Optional, Annotated
 
 from fastapi import Depends
 from pydantic.v1.typing import is_none_type
-
-from main.model.entity.user import User
 from sqlalchemy import select, exists
 
+from main.model.entity.user import User
 from main.persistence.session import DbSessionDepends
 
 
@@ -47,5 +46,6 @@ class UserRepository:
         users = ex.scalars().all()
         await self.session.commit()
         return users
+
 
 UserRepositoryDepends = Annotated[UserRepository, Depends()]

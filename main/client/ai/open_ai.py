@@ -1,9 +1,10 @@
-import rich
 import logging as log
+
+import rich
 from openai.types.chat import ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
 
-from ..client import open_ai_client
 from main.model.open_ai.model import CreateClientInfoRs
+from ..client import open_ai_client
 
 create_client_info_system_prompt = """
             You are a helpful personality generator.

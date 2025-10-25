@@ -1,4 +1,5 @@
 from openai import OpenAI
+
 from main.config.settings import settings
 
 open_ai_client = OpenAI(

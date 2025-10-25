@@ -3,6 +3,7 @@ from typing import AsyncGenerator, Annotated
 from fastapi import Depends
 from sqlalchemy import URL
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+
 from main.config.settings import settings
 
 __db_url = URL.create(
@@ -26,6 +27,7 @@ __Session = async_sessionmaker(
     expire_on_commit=False,  # Не перезагружать объекты после коммита
 )
 
+
 async def __get_session() -> AsyncGenerator[AsyncSession, None]:
     async with __Session() as session:
         try:
@@ -33,5 +35,6 @@ async def __get_session() -> AsyncGenerator[AsyncSession, None]:
         finally:
             # Соединение закроется из-за with
             pass
+
 
 DbSessionDepends = Annotated[AsyncSession, Depends(__get_session)]

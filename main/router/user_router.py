@@ -11,9 +11,12 @@ user_router = APIRouter()
 
 @user_router.post("/create", response_model=CreateUserRs)
 async def create_user(user_service: UserServiceDepends, rq: CreateUserRq) -> CreateUserRs:
-    log.info(f"Поступил запрос на создание пользователя с rqId {rq.rqId}")
+    log.info(f"Поступил запрос на создание пользователя с rq_id {rq.rq_id}")
     log.debug(f"Поступил запрос на создание пользователя {rq}")
-    return await user_service.create_user(rq.login)
+    try:
+        return await user_service.create_user(rq.login, rq.created_at)
+    except Exception as err:
+        raise HTTPException(status_code=404, detail=f"Ошибка при создании пользователя для rq_id {rq.rq_id}: {err}")
 
 
 @user_router.get("/all", response_model=List[UserRs])
