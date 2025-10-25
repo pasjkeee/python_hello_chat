@@ -72,14 +72,14 @@ async def run_migrations_online() -> None:
     connectable: AsyncEngine = create_async_engine(
         get_url(),
         poolclass=pool.NullPool,
-        # echo=True,  # включить при отладке
+        echo=bool(config.get_section("asyncio").get("echo"))
     )
 
-    async with connectable.connect() as connection:
-        # Важно: оборачиваем синхронные вызовы Alembic через run_sync
-        await connection.run_sync(_do_run_migrations)
-
-    await connectable.dispose()
+    try:
+        async with connectable.connect() as connection:
+            await connection.run_sync(_do_run_migrations)
+    finally:
+        await connectable.dispose()
 
 
 if context.is_offline_mode():
