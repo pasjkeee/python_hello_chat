@@ -1,45 +1,51 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Annotated
 
+from fastapi import Depends
 from pydantic.v1.typing import is_none_type
 
 from main.model.entity.user import User
 from sqlalchemy import select, exists
-from main.persistence.session import AsyncSessionLocal
+
+from main.persistence.session import DbSessionDepends
 
 
 class UserRepository:
 
-    @staticmethod
-    async def save(user: User) -> User:
-        async with AsyncSessionLocal() as session:
-            stmt = select(exists().where(User.login == user.login))
-            result = (await session.execute(stmt)).scalar()
-            if result:
-                raise RuntimeError()
+    def __init__(self, session: DbSessionDepends):
+        self.session = session
 
-            session.add(user)
-            await session.commit()
-            await session.refresh(user)
-            return user
+    async def save(self, user: User) -> User:
+        self.session.begin()
+        stmt = select(exists().where(User.login == user.login))
+        ex = await self.session.execute(stmt)
+        if ex.scalar():
+            raise RuntimeError()
 
-    @staticmethod
-    async def find_one(user_id: str) -> User:
-        async with AsyncSessionLocal() as session:
-            stmt = select(User).where(User.id == user_id)
-            user = (await session.execute(stmt)).scalar_one_or_none()
-            if is_none_type(user):
-                raise RuntimeError(f"Не найден пользователь с id {user_id}")
-            await session.commit()
-            return user
+        self.session.add(user)
+        await self.session.commit()
+        await self.session.refresh(user)
+        return user
 
-    @staticmethod
-    async def find_all(registered_after: Optional[datetime]) -> List[User]:
-        async with AsyncSessionLocal() as session:
-            if registered_after is None:
-                stmt = select(User).order_by(User.created_at.asc())
-            else:
-                stmt = select(User).where(User.created_at >= registered_after).order_by(User.created_at.asc())
-            users = (await session.execute(stmt)).scalars().all()
-            await session.commit()
-            return users
+    async def find_one(self, user_id: str) -> User:
+        self.session.begin()
+        stmt = select(User).where(User.id == user_id)
+        ex = await self.session.execute(stmt)
+        user = ex.scalar_one_or_none()
+        if is_none_type(user):
+            raise RuntimeError(f"Не найден пользователь с id {user_id}")
+        await self.session.commit()
+        return user
+
+    async def find_all(self, registered_after: Optional[datetime]) -> List[User]:
+        self.session.begin()
+        if registered_after is None:
+            stmt = select(User).order_by(User.created_at.asc())
+        else:
+            stmt = select(User).where(User.created_at >= registered_after).order_by(User.created_at.asc())
+        ex = await self.session.execute(stmt)
+        users = ex.scalars().all()
+        await self.session.commit()
+        return users
+
+UserRepositoryDepends = Annotated[UserRepository, Depends()]
