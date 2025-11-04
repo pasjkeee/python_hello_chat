@@ -1,7 +1,11 @@
+from functools import lru_cache
+
 from openai import OpenAI
 
-from main.config.settings import settings
+from main.config.settings import get_settings
 
-open_ai_client = OpenAI(
-    api_key=settings.openai.api_key.get_secret_value()
-)
+@lru_cache
+def get_open_ai_client():
+    return OpenAI(
+        api_key=get_settings().openai.api_key.get_secret_value()
+    )

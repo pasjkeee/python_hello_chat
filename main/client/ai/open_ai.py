@@ -6,7 +6,7 @@ from fastapi import Depends
 from openai.types.chat import ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
 
 from main.model.open_ai.model import CreateClientInfoRs
-from ..client import open_ai_client
+from ..client import get_open_ai_client
 
 create_client_info_system_prompt = """
             You are a helpful personality generator.
@@ -20,7 +20,7 @@ class OpenAiCreateClientInfo:
 
     async def create_client_info(self, login: str) -> CreateClientInfoRs:
         log.info(f"Запрос на создание личности пользователя {login}")
-        completion = open_ai_client.chat.completions.parse(
+        completion = get_open_ai_client().chat.completions.parse(
             model="gpt-4o-mini",
             messages=[
                 ChatCompletionSystemMessageParam(role="system", content=create_client_info_system_prompt),
