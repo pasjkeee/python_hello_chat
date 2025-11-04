@@ -1,0 +1,94 @@
+[MASTER]
+py-version=3.13
+jobs=0
+recursive=yes
+
+# Не проверяем технические каталоги
+ignore=.venv,venv,.mypy_cache,.pytest_cache,.ruff_cache,dist,build
+ignore-patterns=^migrations/.*$,^alembic/.*$,^.*_pb2(?:_grpc)?\.py$
+
+load-plugins=
+    pylint.extensions.docparams,
+    pylint.extensions.docstyle,
+    pylint.extensions.bad_builtin,
+    pylint.extensions.set_membership,
+    pylint.extensions.typing,
+    pylint.extensions.no_self_use
+
+reports=no
+
+[MESSAGES CONTROL]
+# Отключаем шум, характерный для FastAPI/Pydantic/тестов.
+disable=
+    C0103,  # invalid-name (короткие имена у роутеров/app/db/ok)
+    C0114,  # missing-module-docstring
+    R0903,  # too-few-public-methods (DTO/модели)
+    R0201,  # no-self-use (сервисы/валидация)
+    C0415,  # import-outside-toplevel (ленивые импорты в роутерах)
+    W0613,  # unused-argument (фикстуры, request в сигнатурах)
+    W0707,  # raise-missing-from (иногда осознанно)
+    W1203,  # logging-fstring-interpolation (разрешаем f-строки в логах)
+    W1514   # unspecified-encoding (если есть своя обёртка для IO)
+
+[TYPECHECK]
+# FastAPI/Pydantic/SQLAlchemy часто добавляют атрибуты динамически.
+generated-members=
+    pydantic.*,
+    pydantic_settings.*,
+    sqlalchemy.orm.*,
+    starlette.requests.Request.*,
+    starlette.background.*,
+    fastapi.Depends,
+    fastapi.security.*,
+    fastapi.BackgroundTasks.*
+
+[FORMAT]
+max-line-length=100
+indent-string='    '
+max-module-lines=1200
+
+[NAMING]
+# Разрешённые короткие имена, типичные для FastAPI/DB
+good-names=i,j,k,_,db,op,rv,ok,id,pk,app,req,res,qs
+
+[DESIGN]
+# Чуть расслабляем лимиты для обработчиков (много Depends/параметров)
+max-args=8
+max-locals=25
+max-returns=6
+max-branches=12
+max-statements=60
+max-attributes=12
+min-public-methods=1
+
+[SIMILARITIES]
+min-similarity-lines=10
+ignore-comments=yes
+ignore-docstrings=yes
+ignore-imports=yes
+
+[IMPORTS]
+# Укажи свой набор сторонних библиотек
+known-third-party=fastapi,starlette,pydantic,pydantic_settings,sqlalchemy,alembic,httpx,uvicorn,pytest,pytest_asyncio,orjson,passlib,python_jose
+
+[VARIABLES]
+allow-global-unused-variables=no
+
+[EXCEPTIONS]
+# Не ловим чрезмерно общие исключения
+overgeneral-exceptions=builtins.Exception,builtins.BaseException
+
+[REFACTORING]
+max-nested-blocks=4
+
+[LOGGING]
+# Разрешаем f-строки в логах (см. disable=W1203)
+logging-format-style=old
+
+[STRING]
+check-quote-consistency=yes
+
+[DOCSTRING]
+docstring-min-length=10
+accept-no-param-doc=no
+accept-no-return-doc=no
