@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import AsyncGenerator, Annotated
 
 from fastapi import Depends
@@ -26,7 +27,8 @@ def __get_engine():
     )
 
 
-def __get_session():
+@lru_cache
+def __get_session() -> async_sessionmaker[AsyncSession]:
     return async_sessionmaker(
         bind=__get_engine(),
         autoflush=False,
@@ -35,7 +37,8 @@ def __get_session():
 
 
 async def __with_session() -> AsyncGenerator[AsyncSession, None]:
-    async with __get_session() as session:
+    session = __get_session()
+    async with session() as session:
         try:
             yield session
         finally:

@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 from typing import cast
 from unittest.mock import create_autospec, AsyncMock
@@ -10,7 +11,15 @@ from main.model.api.user_model import CreateUserRs, UserRs
 from main.model.entity.user import User
 from main.model.open_ai.model import CreateClientInfoRs, Gender
 from main.persistence.user_repository import UserRepository
+from main.server.kafka.default_producer import DefaultProducerDepends
 from main.service.user_service import UserService
+
+
+def future_ok(value=None):
+    f = asyncio.Future()
+    f.set_result(value)
+    return f
+
 
 @pytest.mark.asyncio
 async def test_create_user_success():
@@ -24,7 +33,11 @@ async def test_create_user_success():
     open_ai_create_client_info_mock = create_autospec(OpenAiCreateClientInfo, spec_set=True, instance=True)
     open_ai_create_client_info_mock.create_client_info = AsyncMock(return_value=get_create_client_info_rs())
 
-    service = UserService(user_repository=user_repository_mock, open_ai_create_client_info=open_ai_create_client_info_mock)
+    producer_mock = create_autospec(DefaultProducerDepends, spec_set=True, instance=True)
+    producer_mock.send_user_created_msg = AsyncMock(return_value=future_ok("OK"))
+
+    service = UserService(user_repository=user_repository_mock,
+                          open_ai_create_client_info=open_ai_create_client_info_mock, producer=producer_mock)
 
     # when
     login = "login"
@@ -36,6 +49,8 @@ async def test_create_user_success():
 
     open_ai_create_client_info_mock.create_client_info.assert_awaited_once_with(login)
     user_repository_mock.save.assert_awaited_once()
+
+    producer_mock.send_user_created_msg.assert_awaited_once()
 
     args, kwargs = user_repository_mock.save.call_args
     user_capture = cast(User, kwargs["user"])
@@ -49,6 +64,7 @@ async def test_create_user_success():
     assert user_capture.gender == "MALE"
     assert user_capture.age == 10
 
+
 @pytest.mark.asyncio
 async def test_get_user_success():
     # given
@@ -61,7 +77,8 @@ async def test_get_user_success():
 
     open_ai_create_client_info_mock = create_autospec(OpenAiCreateClientInfo, spec_set=True, instance=True)
 
-    service = UserService(user_repository=user_repository_mock, open_ai_create_client_info=open_ai_create_client_info_mock)
+    service = UserService(user_repository=user_repository_mock,
+                          open_ai_create_client_info=open_ai_create_client_info_mock)
 
     # when
     result = await service.get_user(user_id)
@@ -70,6 +87,7 @@ async def test_get_user_success():
     assert result == rs
 
     user_repository_mock.find_one.assert_awaited_once_with(user_id)
+
 
 @pytest.mark.asyncio
 async def test_get_users_success():
@@ -83,7 +101,8 @@ async def test_get_users_success():
 
     open_ai_create_client_info_mock = create_autospec(OpenAiCreateClientInfo, spec_set=True, instance=True)
 
-    service = UserService(user_repository=user_repository_mock, open_ai_create_client_info=open_ai_create_client_info_mock)
+    service = UserService(user_repository=user_repository_mock,
+                          open_ai_create_client_info=open_ai_create_client_info_mock)
 
     # when
     result = await service.get_users(registered_after=None)
@@ -95,10 +114,14 @@ async def test_get_users_success():
 
 
 def get_user_1(user_id: str) -> User:
-    return User(id=user_id, login="login", name="name", surname="surname", description="d", created_at=datetime.datetime.now(), gender="MALE", age=10)
+    return User(id=user_id, login="login", name="name", surname="surname", description="d",
+                created_at=datetime.datetime.now(), gender="MALE", age=10)
+
 
 def get_user_rs_1(user: User) -> UserRs:
-    return UserRs(id=user.id, login=user.login, name=user.name, surname=user.surname, description=user.description, created_at=user.created_at, gender=user.gender, age=user.age)
+    return UserRs(id=user.id, login=user.login, name=user.name, surname=user.surname, description=user.description,
+                  created_at=user.created_at, gender=user.gender, age=user.age)
+
 
 def get_create_client_info_rs():
     return CreateClientInfoRs(age=10, gender=Gender.MALE, name="n", surname="s", description="d")

@@ -16,6 +16,7 @@ create_client_info_system_prompt = """
 
 create_client_info_user_prompt = lambda login: f"login is {login}"
 
+
 class OpenAiCreateClientInfo:
 
     async def create_client_info(self, login: str) -> CreateClientInfoRs:
@@ -36,5 +37,6 @@ class OpenAiCreateClientInfo:
             return response.parsed
         else:
             raise RuntimeError
+
 
 OpenAiCreateClientInfoDepends = Annotated[OpenAiCreateClientInfo, Depends()]
